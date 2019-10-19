@@ -63,4 +63,18 @@ case object CommitManager {
     if(FileManager.getFile(".sgit/" + ref).get.isEmpty) ""
     else FileManager.readFile(".sgit/" + ref)
   }
+
+  /**
+   * Removes the files that has not been modified from the previous commit.
+   * @param newFiles the new files to add.
+   * @return the new files minus the not modified ones.
+   */
+  def getModifiedFiles(newFiles: Seq[Staged]): Seq[Staged] = {
+    val lastCommit = CommitManager.lastCommit()
+    if(lastCommit == "") newFiles
+    else {
+      val committedFiles: Seq[Staged] = CommitManager.getCommit(lastCommit).get.files
+      newFiles.diff(committedFiles)
+    }
+  }
 }

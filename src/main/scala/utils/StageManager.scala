@@ -100,17 +100,5 @@ object StageManager {
   }
 
 
-  /**
-   * Removes the files that has not been modified from the previous commit.
-   * @param newFiles the new files to add.
-   * @return the new files minus the not modified ones.
-   */
-  def notModifiedFiles(newFiles: Seq[Staged]): Seq[Staged] = {
-    val lastCommit = CommitManager.lastCommit()
-    if(lastCommit == "") newFiles
-    else {
-      val committedFiles: Seq[Staged] = CommitManager.getCommit(lastCommit).get.files
-      newFiles.diff(committedFiles)
-    }
-  }
+
 }
