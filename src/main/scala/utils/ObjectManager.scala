@@ -9,16 +9,16 @@ case object ObjectManager {
 
   def wd(): File = ".sgit/".toFile.parent
 
-  def getObject(name: String): Option[File] = {
-    if(FileManager.isFileOrDirExists(".sgit/objects/blobs")) Some((".sgit/objects/blobs/" + name).toFile)
+  def getObject(hash: String): Option[File] = {
+    if(FileManager.isFileOrDirExists(".sgit/objects/blobs")) Some((".sgit/objects/blobs/" + hash).toFile)
     else None
   }
 
-  def getObjects(names: Seq[String]): Seq[Option[File]] = {
-    names.map(f =>
-      if(FileManager.isFileOrDirExists(f)) Some(getObject(f).get)
+  def getObjects(hashes: Seq[String]): Seq[Option[File]] = {
+    hashes.map(hash => {
+      if(FileManager.isFileOrDirExists(hash)) Some(getObject(hash).get)
       else None
-    )
+    })
   }
 
   def getObjectsFromRegex(str: String): Seq[File] = {
@@ -26,15 +26,11 @@ case object ObjectManager {
     else wd().glob(str).toSeq
   }
 
-  def createObjects(files: Seq[File]): Option[Seq[Blob]] = {
-    if (!FileManager.isFileOrDirExists(".sgit/objects/blobs")) None
-    else {
-      val res = files.iterator.map(file => {
-        writeObject(file)
-        Blob(file.sha1, wd().relativize(file).toString, FileManager.readFile(file))
-      }).toSeq
-      Some(res)
-    }
+  def createObjects(files: Seq[File]): Seq[Blob] = {
+    files.iterator.map(file => {
+      writeObject(file)
+      Blob(file.sha1, wd().relativize(file).toString, FileManager.readFile(file))
+    }).toSeq
   }
 
   def writeObject(file: File): Unit = {

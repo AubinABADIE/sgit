@@ -1,112 +1,110 @@
 import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
 import better.files._
-import actions.{Add, Commit}
-import utils.{FileManager, CommitManager}
+import actions.{Add, Commit, Init}
+import utils.{CommitManager, FileManager}
 
 
 class CommitTest extends FunSpec with BeforeAndAfter with Matchers {
 
-//  before{
-//    if(".sgit".toFile.exists) ".sgit".toFile.delete()
-//    FolderManipulation.createFolderStructure()
-//    "test.txt".toFile.createIfNotExists().append("Test")
-//  }
-//
-//  after {
-//    if(".sgit".toFile.exists) ".sgit".toFile.delete()
-//    if("test.txt".toFile.exists) "test.txt".toFile.delete()
-//  }
-//
-//  describe("With no files in the stage") {
-//    it("Should print an error and exit.") {
-//      assert(CommitFiles.commit("").isEmpty)
-//    }
-//  }
-//
+  before{
+    if(FileManager.isFileOrDirExists(".sgit")) FileManager.deleteFileOrDir(".sgit")
+    if(FileManager.isFileOrDirExists("file.txt")) FileManager.deleteFileOrDir("file.txt")
+
+    Init.init()
+    val file : File = FileManager.createFile("file.txt")
+    FileManager.writeLineFile(file, "Hello World!")
+    Add.add(Seq(file))
+  }
+  after {
+    if(FileManager.isFileOrDirExists(".sgit")) FileManager.deleteFileOrDir(".sgit")
+    if(FileManager.isFileOrDirExists("file.txt")) FileManager.deleteFileOrDir("file.txt")
+  }
+
 //  describe("With files in the stage") {
-//    describe("And no commits"){
+//
+//    describe("And no commits") {
 //      it("Should return true") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        assert(CommitFiles.commit("").nonEmpty)
+//        assert(Commit.commit("Commit").nonEmpty)
 //      }
 //      it("Should create a branch called master which references the commit") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        val res = CommitFiles.commit("")
-//        assert(".sgit/refs/heads/master".toFile.exists)
-//        ".sgit/refs/heads/master".toFile.contentAsString should include (res.get)
+//        val out = Commit.commit("Commit")
+//        assert(FileManager.isFileOrDirExists(".sgit/refs/heads/master"))
+//        FileManager.readFile(".sgit/refs/heads/master") should include(out.get)
 //      }
-//      it("Should create a commit file in the objects folder") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        val res = CommitFiles.commit("")
-//        ".sgit/objects/".toFile.children.toSeq should have length 2
-//        assert((".sgit/objects/"+res.get).toFile.exists)
+//      it("Should create a commit file in the objects/commits directory") {
+//        val out = Commit.commit("Commit")
+//        ".sgit/objects/commits/".toFile.children.toSeq should have length 1
+//        assert(FileManager.isFileOrDirExists(".sgit/objects/commits/" + out.get))
 //      }
 //      it("Should be referenced by the last commit method") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        val res = CommitFiles.commit("")
-//        CommitManipulation.findMostRecentCommit().get should include (res.get)
+//        val out = Commit.commit("Commit")
+//        CommitManager.lastCommit() should include (out.get)
 //      }
 //      it("Should have one child") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        CommitFiles.commit("")
-//        val commit = CommitManipulation.findCommitInfos(CommitManipulation.findMostRecentCommit().get).get
+//        Commit.commit("Commit")
+//        val commit = CommitManager.getCommit(CommitManager.lastCommit()).get
 //        commit.files should have length 1
-//        commit.files.head.name should include ("test.txt")
+//        commit.files.head.hash should include ("file.txt".toFile.sha1)
 //      }
 //    }
+
 //    describe("And a commit that already exists") {
 //      it("Should have 4 files in the directory (2 commits and 2 files)") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        CommitFiles.commit("")
-//        "test.txt".toFile.appendLine("This is another test! :)")
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        CommitFiles.commit("")
-//        ".sgit/objects/".toFile.children.toSeq should have length 4
+//        Commit.commit("Commit")
+//        "file.txt".toFile.appendLine("This is another test! :)")
+//        Add.add(Seq("file.txt"))
+//        Commit.commit("Commit")
+//        ".sgit/objects/blobs/".toFile.children.toSeq should have length 2
+//        ".sgit/objects/commits/".toFile.children.toSeq should have length 2
 //      }
 //      it("Should change the head") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        val first = CommitFiles.commit("")
-//        "test.txt".toFile.appendLine("This is another test! :)")
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        CommitFiles.commit("")
-//        CommitManipulation.findMostRecentCommit().get should not include first.get
+//        val first = Commit.commit("Commit")
+//        "file.txt".toFile.appendLine("This is another test! :)")
+//        Add.add(Seq("file.txt"))
+//        Commit.commit("Commit")
+//        CommitManager.lastCommit().get should not include first.get
 //      }
 //      it("Should reference the last commit as a parent") {
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        val parent = CommitFiles.commit("")
-//        "test.txt".toFile.appendLine("This is another test! :)")
-//        AddFiles.add(Seq("test.txt".toFile.toJava))
-//        val curr = CommitFiles.commit("")
-//        val commit = CommitManipulation.findCommitInfos(CommitManipulation.findMostRecentCommit().get).get
-//        commit.parents.head should include (parent.get)
-//        commit.name should include (curr.get)
+//        val parent = Commit.commit("Commit")
+//        "file.txt".toFile.appendLine("This is another test! :)")
+//        Add.add(Seq("file.txt"))
+//        val curr = Commit.commit("Commit")
+//        val commit = CommitManager.getCommit(CommitManager.lastCommit().get).get
+//        commit.parent should include (parent.get)
+//        commit.hash should include (curr.get)
 //      }
+//
 //      describe("And a file with the same name"){
 //        it("Should have only one file referenced"){
-//          AddFiles.add(Seq("test.txt".toFile.toJava))
-//          CommitFiles.commit("")
-//          "test.txt".toFile.appendLine("This is another test! :)")
-//          AddFiles.add(Seq("test.txt".toFile.toJava))
-//          CommitFiles.commit("")
-//          val commit = CommitManipulation.findCommitInfos(CommitManipulation.findMostRecentCommit().get).get
+//          Commit.commit("Commit")
+//          "file.txt".toFile.appendLine("This is another test! :)")
+//          Add.add(Seq("file.txt"))
+//          Commit.commit("Commit")
+//          val commit = CommitManager.getCommit(CommitManager.lastCommit().get).get
 //          commit.files should have length 1
-//          commit.files.head.name should include ("test.txt")
+//          commit.files.head.hash should include ("file.txt")
 //        }
 //      }
+//
 //      describe("And another file added"){
 //        it("Should have 2 files referenced") {
-//          AddFiles.add(Seq("test.txt".toFile.toJava))
-//          CommitFiles.commit("")
+//          Commit.commit("Commit")
 //          "another.txt".toFile.createIfNotExists().appendLine("This is another file.")
-//          AddFiles.add(Seq("another.txt".toFile.toJava))
-//          CommitFiles.commit("")
-//          val commit = CommitManipulation.findCommitInfos(CommitManipulation.findMostRecentCommit().get).get
+//          Add.add(Seq("another.txt"))
+//          Commit.commit("Commit")
+//          val commit = CommitManager.getCommit(CommitManager.lastCommit().get).get
 //          commit.files should have length 2
-//          commit.files.head.name should include ("test.txt")
-//          commit.files.tail.head.name should include ("another.txt")
+//          commit.files.head.hash should include ("file.txt")
+//          commit.files.tail.head.hash should include ("another.txt")
 //          "another.txt".toFile.delete()
 //        }
 //      }
+//    }
+//  }
+//
+//  describe("No files in the stage") {
+//    it("should print an error and exit.") {
+//      assert(Commit.commit("Commit").isEmpty)
 //    }
 //  }
 }

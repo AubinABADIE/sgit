@@ -2,7 +2,7 @@ package actions
 
 import better.files._
 import utils.{ConsoleOutput, FileManager, ObjectManager, StageManager}
-import objects.{Blob, Staged}
+import objects.Staged
 
 import scala.annotation.tailrec
 
@@ -10,41 +10,37 @@ object Add {
 
   /**
    * Adds certain files to the stage.
-   * This method is not RT nor pure
    * @param paths the files given by the user.
    */
   def add(paths: Seq[File]): Unit = {
+    if(!FileManager.isFileOrDirExists(".sgit")) ConsoleOutput.printError("Repository had not been initialized yet. Please run 'sgit init'.")
+    if(paths.isEmpty) ConsoleOutput.printError("There are no files to add in stage or the files doesn't exist.")
+
     @tailrec
-    def getFiles(filePaths: Seq[File], out: Seq[File]): Seq[File] = {
-      if(filePaths.isEmpty) return out
-      val files = FileManager.listFiles(filePaths.head)
-      getFiles(filePaths.tail, out ++ files)
+    def getFiles(filesPath: Seq[File], out: Seq[File]): Seq[File] = {
+      if(filesPath.isEmpty) out
+      else {
+        val head = filesPath.head
+        if(head.isDirectory) getFiles(filesPath.tail, out ++ FileManager.listFilesInDirectory(head))
+        else getFiles(filesPath.tail, out :+ head)
+      }
     }
     val files = getFiles(paths, Seq())
 
-    if(files.isEmpty)
-      ConsoleOutput.printError("Repository had not been initialized yet. Please run 'sgit init'.")
+    val newFiles: Seq[Staged] = ObjectManager.blobsToStaged(ObjectManager.createObjects(files))
+    val oldFiles: Seq[Staged] = StageManager.getStagedFiles()
+
+    val staged = if(oldFiles.isEmpty) {
+      StageManager.addStagedFiles(newFiles)
+    }  else {
+      val newStagedFiles: Seq[Staged] = StageManager.updateIndex(newFiles, oldFiles)
+      StageManager.addStagedFiles(newStagedFiles)
+    }
+
+    if(staged.isEmpty)
+      ConsoleOutput.print("No modifications found.")
     else {
-      val newFiles: Seq[Blob] = ObjectManager.createObjects(files).get
-      val stagedFiles = StageManager.getStagedFiles().orNull
-      val modifications: (Seq[Staged], Seq[Staged]) = StageManager.duplicatedStagedFiles(ObjectManager.blobsToStaged(newFiles), stagedFiles)
-
-      if(modifications._2.nonEmpty) {
-        @tailrec
-        def deleteObjects(files: Seq[Staged]): Unit = {
-          if(files.isEmpty) return
-          ObjectManager.deleteObject(files.head.hash)
-          deleteObjects(files.tail)
-        }
-        deleteObjects(modifications._2)
-      }
-      val staged: Option[Boolean] = StageManager.addStagedFiles(/*StageManager.notModifiedFiles(*/modifications._1)/*)*/ //Has side effects
-
-      if(staged.isEmpty)
-        ConsoleOutput.print("Can't add the files to stage.")
-      else {
-        ConsoleOutput.print("Successfully added files to stage!")
-      }
+      ConsoleOutput.print("Successfully added files to stage!")
     }
   }
 }

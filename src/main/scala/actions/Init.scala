@@ -22,9 +22,10 @@ case object Init {
       ".sgit/refs/tags"
       ))
 
+      FileManager.createFile(".sgit/refs/heads/master")
       FileManager.createFile (".sgit/INDEX")
       FileManager.createFile (".sgit/HEAD")
-      FileManager.writeFile (".sgit/HEAD", "ref: refs/heads/master")
+      FileManager.writeFile (".sgit/HEAD", "refs/heads/master")
 
       return true
     }

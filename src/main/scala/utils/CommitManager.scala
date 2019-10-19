@@ -14,12 +14,11 @@ case object CommitManager {
    * @param parent the parents of the commit.
    */
   def createCommit(files: Seq[Staged], message: String, parent: String): String = {
-    val commit: File = ".sgit/objects/commits/tmp".toFile
-      .createIfNotExists()
-      .appendLine(Calendar.getInstance.getTime.toString)
-      .appendLine(message)
-      .appendLine(parent)
-    files.foreach(file => commit.appendLine(file.hash + " " + file.path))
+    val commit: File = FileManager.createFile(".sgit/objects/commits/tmpObject")
+    FileManager.writeLineFile(commit, Calendar.getInstance.getTime.toString)
+    FileManager.writeLineFile(commit, message)
+    FileManager.writeLineFile(commit, parent)
+    files.map(file => commit.appendLine(file.hash + " " + file.path))
     commit.renameTo(commit.sha1).name
   }
 
@@ -58,10 +57,10 @@ case object CommitManager {
    * Finds the last commit.
    * @return the commit hash ID.
    */
-  def lastCommit(): Option[String] = {
+  def lastCommit(): String = {
     val ref : String = FileManager.readFile(".sgit/HEAD")
-    if(FileManager.isFileOrDirExists(".sgit/" + ref))
-      Some(FileManager.readFile(".sgit/" + ref))
-    else None
+
+    if(FileManager.getFile(".sgit/" + ref).get.isEmpty) ""
+    else FileManager.readFile(".sgit/" + ref)
   }
 }

@@ -21,9 +21,10 @@ class InitTest extends FunSpec with BeforeAndAfter with Matchers {
       assert(FileManager.isFileOrDirExists(".sgit/objects/commits"))
       assert(FileManager.isFileOrDirExists(".sgit/refs/heads"))
       assert(FileManager.isFileOrDirExists(".sgit/refs/tags"))
+      assert(FileManager.isFileOrDirExists(".sgit/refs/heads/master"))
       assert(FileManager.isFileOrDirExists(".sgit/INDEX"))
       assert(FileManager.isFileOrDirExists(".sgit/HEAD"))
-      assert(FileManager.readFile(".sgit/HEAD") == "ref: refs/heads/master")
+      assert(FileManager.readFile(".sgit/HEAD") == "refs/heads/master")
     }
   }
 

@@ -4,6 +4,8 @@ import java.time.Instant
 
 import better.files._
 
+import scala.annotation.tailrec
+
 case object FileManager {
 
   def createDirectory(path: String): Unit = path.toFile.createIfNotExists(false,false)
@@ -35,11 +37,25 @@ case object FileManager {
   def lastModifiedTime(path: String): Instant = path.toFile.lastModifiedTime
   def lastModifiedTime(file: File): Instant = file.lastModifiedTime
 
-  def listFiles(path: File): Seq[File] = {
-    if (path.isRegularFile) Array(path)
-    else {
-      val f = path.list(_.name != ".sgit").toList
-      f ++ f.filter(_.isDirectory).flatMap(listFiles)
+  def getFile(path: String): Option[File] = {
+    if(isFileOrDirExists(path)) Some(path.toFile)
+    else None
+  }
+
+  def getFiles(files: Seq[File]): Seq[File] = {
+    @tailrec
+    def findFiles(files: Seq[File], out: Seq[File]): Seq[File] = {
+      if(files.isEmpty) return out
+
+      if(isFileOrDirExists(files.head)) findFiles(files.tail, out ++ listFilesInDirectory(files.head))
+      else findFiles(files.tail, out)
     }
+    findFiles(files, Seq[File]()).filterNot(file => file == null)
+  }
+
+  def listFilesInDirectory(path: File): Seq[File] = {
+    path.list(!_.pathAsString.contains(".sgit"))
+      .filter(_.isRegularFile)
+      .toSeq
   }
 }
