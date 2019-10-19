@@ -15,35 +15,27 @@ case object Commit {
     val lastCommit: String = CommitManager.lastCommit()
     val stagedFiles: Seq[Staged] = StageManager.getStagedFiles()
 
-    if(stagedFiles.isEmpty) {
+    if (stagedFiles.isEmpty) {
       ConsoleOutput.printError("No files found. Please run 'sgit add <file> ...'")
       None
     }
 
-    else if(lastCommit.isEmpty) {
+    else if (lastCommit.isEmpty) {
       Some(applyCommit(stagedFiles, message, lastCommit))
     } else {
       val newFiles = CommitManager.getModifiedFiles(stagedFiles)
       val parent: Commit = CommitManager.getCommit(lastCommit).get
-      if(newFiles.isEmpty) {
+      if (newFiles.isEmpty) {
         ConsoleOutput.printError("No modified files found.")
         None
       }
       else Some(applyCommit(newFiles, message, parent.hash))
-
-        //      val newFiles: Seq[String] = stagedFiles.map(file => file.hash)
-        //      val newList: Seq[Staged] = parent.files.iterator.map(file => {
-        //        if(newFiles.contains(file.hash)) stagedFiles.filter(f => f.hash == file.hash).head
-        //        else file
-        //      }).toSeq
-
     }
   }
 
   def applyCommit(stagedFiles: Seq[Staged], message: String, parent: String): String = {
     val hash = CommitManager.createCommit(stagedFiles, message, parent)
     BranchManager.updateCurrentBranch(hash)
-    //StageManager.deleteStage()
     ConsoleOutput.print("Successfully done new commit " + hash + " at " + BranchManager.getCurrentBranch())
     return hash
   }

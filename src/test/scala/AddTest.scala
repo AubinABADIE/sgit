@@ -54,8 +54,6 @@ class AddTest extends FunSpec with BeforeAndAfter with Matchers {
         val file: File = FileManager.getFile("file.txt").get
         val hash = file.sha1
 
-        Add.add(Seq(file))
-
         FileManager.writeLineFile(file, "Toto")
         val hash2 = file.sha1
         assert(hash2 != hash)
@@ -63,7 +61,6 @@ class AddTest extends FunSpec with BeforeAndAfter with Matchers {
         Add.add(Seq(file))
 
         assert(FileManager.isFileOrDirExists(".sgit/objects/blobs/" + hash2))
-        //FileManager.readFile(".sgit/INDEX") should not include (hash + " file.txt")
         FileManager.readFile(".sgit/INDEX") should include (hash2 + " file.txt")
       }
     }

@@ -90,19 +90,19 @@ class CommitTest extends FunSpec with BeforeAndAfter with Matchers {
         }
       }
 
-//      describe("And another file added"){
-//        it("Should have 2 files referenced") {
-//          Commit.commit("Commit 1")
-//          val file2 = FileManager.createFile("file2.txt")
-//          FileManager.writeLineFile(file2, "Toto")
-//          Add.add(Seq(file2))
-//          Commit.commit("Commit 2")
-//          val commit = CommitManager.getCommit(CommitManager.lastCommit()).get
-//          commit.files should have length 1
-//          commit.files.head.path should include ("file2.txt")
-//          FileManager.deleteFileOrDir("file2")
-//        }
-//      }
+      describe("And another file added"){
+        it("Should have 2 files referenced") {
+          Commit.commit("Commit 1")
+          val file2 = FileManager.createFile("file2.txt")
+          FileManager.writeLineFile(file2, "Toto")
+          Add.add(Seq(file2))
+          Commit.commit("Commit 2")
+          val commit = CommitManager.getCommit(CommitManager.lastCommit()).get
+          commit.files should have length 1
+          commit.files.head.path should include ("file2.txt")
+          FileManager.deleteFileOrDir("file2.txt")
+        }
+      }
     }
   }
 

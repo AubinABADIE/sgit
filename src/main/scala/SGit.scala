@@ -5,7 +5,11 @@ import better.files._
 case class Config(
   mode: String = "",
   stagedFiles: Seq[File] = Seq(),
-  commitMessage: String = ""
+  commitMessage: String = "",
+  branchName: String = "",
+  tagName: String = "",
+  checkout: String = "",
+
 ){}
 
 object SGit extends App {
@@ -47,32 +51,39 @@ object SGit extends App {
 
       cmd("status")
         .action((_, c) => c.copy(mode = "status"))
-        .text("Shows the current files status"),
+        .text("Display the stage status"),
 
-//      cmd(name = "tag")
-//        .action((_, c) => c.copy(mode = "tag"))
-//        .text("Add a tag reference in refs/tags/.")
-//        .children(
-//          arg[String]("<tag name>")
-//            .optional()
-//            .action((x, c) => c.copy(tagName = x))
-//            .text("name of the tag")
-//        ),
-//
-//        cmd(name = "branch")
-//        .action((_, c) => c.copy(mode = "branch", showBranch = true))
-//        .text("Create a new branch")
-//        .children(
-//          arg[String](name = "<branch name>")
-//            .action((x, c) => c.copy(file = x))
-//            .optional()
-//            .text("name of the branch you are creating"),
-//          opt[Unit]('a', name = "all")
-//            .action((_, c) => c.copy(showBranch = true, showTag = true))
-//            .text("List all branches and tags"),
-//          opt[Unit]('v', name = "verbose")
-//            .action((_, c) => c.copy(verbose = true))
-//        ),
+      cmd("branch")
+        .action((_, c) => c.copy(mode = "branch"))
+        .text("Create a new branch")
+        .children(
+          arg[String]("<branch name>")
+            .required()
+            .action((x, c) => c.copy(branchName = x))
+            .text("Branch to be created"),
+          opt[String]("av")
+            .text("List all existing branches and tags")
+        ),
+
+      cmd(name = "tag")
+        .action((_, c) => c.copy(mode = "tag"))
+        .text("Add a tag reference in refs/tags/.")
+        .children(
+          arg[String]("<tag name>")
+            .optional()
+            .action((x, c) => c.copy(tagName = x))
+            .text("name of the tag")
+        ),
+
+      cmd("log")
+        .action((_, c) => c.copy(mode = "log"))
+        .text("Display the commit logs")
+        .children(
+          opt[Unit]("p")
+            .text("Show changes overtime"),
+          opt[Unit]("stat")
+            .text("Show stats about changes overtime")
+        ),
     )
   }
 
@@ -88,6 +99,7 @@ object SGit extends App {
         case "status" =>
         case "branch" =>
         case "tag" =>
+        case "log" =>
         case _ => println("sgit: '" + config.mode + "'is not a sgit command.")
       }
     }

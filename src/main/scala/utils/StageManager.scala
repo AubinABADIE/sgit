@@ -39,14 +39,12 @@ object StageManager {
 
     @tailrec
     def findExisting(files: Seq[Staged], existingFiles: Seq[Staged], out: Seq[Staged]): Seq[Staged] = {
-      //println(files + "\n" + existingFiles + "\n" + out + "\n")
       if(files.isEmpty) out ++ existingFiles
       else {
         val index = existingFiles.indexOf(files.head)
 
         if(index != -1) {
           val oldStage = existingFiles.take(index - 1) ++ existingFiles.drop(index + 1)
-          println(oldStage)
           findExisting(files.tail, oldStage, out :+ files.head)
         }
         else findExisting(files.tail, existingFiles, out :+ files.head)
@@ -98,7 +96,4 @@ object StageManager {
       Some(true)
     }
   }
-
-
-
 }
