@@ -39,6 +39,10 @@ object SGit extends App {
             .required()
         ),
 
+      cmd("status")
+        .action((_, c) => c.copy(mode = "status"))
+        .text("Display the stage status"),
+
       cmd(name = "commit")
         .action((_, c) => c.copy(mode = "commit"))
         .text("Commit the staged changes")
@@ -49,9 +53,15 @@ object SGit extends App {
             .required()
         ),
 
-      cmd("status")
-        .action((_, c) => c.copy(mode = "status"))
-        .text("Display the stage status"),
+      cmd("log")
+        .action((_, c) => c.copy(mode = "log"))
+        .text("Display the commit logs")
+        .children(
+          opt[Unit]("p")
+            .text("Show changes overtime"),
+          opt[Unit]("stat")
+            .text("Show stats about changes overtime")
+        ),
 
       cmd("branch")
         .action((_, c) => c.copy(mode = "branch"))
@@ -74,16 +84,6 @@ object SGit extends App {
             .action((x, c) => c.copy(tagName = x))
             .text("name of the tag")
         ),
-
-      cmd("log")
-        .action((_, c) => c.copy(mode = "log"))
-        .text("Display the commit logs")
-        .children(
-          opt[Unit]("p")
-            .text("Show changes overtime"),
-          opt[Unit]("stat")
-            .text("Show stats about changes overtime")
-        ),
     )
   }
 
@@ -95,11 +95,11 @@ object SGit extends App {
       config.mode match {
         case "init" => Init.init()
         case "add" => Add.add(config.stagedFiles)
-        case "commit" => Commit.commit(config.commitMessage)
         case "status" =>
+        case "commit" => Commit.commit(config.commitMessage)
+        case "log" => Log.logs()
         case "branch" =>
         case "tag" =>
-        case "log" =>
         case _ => println("sgit: '" + config.mode + "'is not a sgit command.")
       }
     }

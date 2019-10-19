@@ -9,5 +9,3 @@ case class Commit(
   parent: String,
   files: Seq[Staged]
 )
-
-//CommitObject(name: String, desc: String, parents: Seq[String], time: Date, files: List[StagedFile])
