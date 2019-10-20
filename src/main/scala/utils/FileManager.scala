@@ -8,6 +8,12 @@ import scala.annotation.tailrec
 
 case object FileManager {
 
+  /**
+   * Get the working directory
+   * @return the path
+   */
+  def wd(): File = ".sgit/".toFile.parent
+
   def createDirectory(path: String): Unit = path.toFile.createIfNotExists(false,false)
   def createDirectories(paths: List[String]): Unit = paths.map(_.toFile.createIfNotExists(true,true))
 

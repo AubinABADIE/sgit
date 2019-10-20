@@ -6,10 +6,10 @@ case class Config(
   mode: String = "",
   stagedFiles: Seq[File] = Seq(),
   commitMessage: String = "",
-  branchName: String = "",
+  branchName: Option[String] = None,
+  verbose: Boolean = false,
   tagName: String = "",
   checkout: String = "",
-
 ){}
 
 object SGit extends App {
@@ -67,12 +67,13 @@ object SGit extends App {
         .action((_, c) => c.copy(mode = "branch"))
         .text("Create a new branch")
         .children(
-          arg[String]("<branch name>")
-            .required()
-            .action((x, c) => c.copy(branchName = x))
-            .text("Branch to be created"),
           opt[String]("av")
-            .text("List all existing branches and tags")
+            .action((_, c) => c.copy(verbose = true))
+            .text("List all existing branches and tags"),
+          arg[String]("<branch name>")
+            .optional()
+            .action((x, c) => c.copy(branchName = Some(x)))
+            .text("Branch to be created")
         ),
 
       cmd(name = "tag")
@@ -95,10 +96,10 @@ object SGit extends App {
       config.mode match {
         case "init" => Init.init()
         case "add" => Add.add(config.stagedFiles)
-        case "status" =>
+        case "status" => Status.status()
         case "commit" => Commit.commit(config.commitMessage)
         case "log" => Log.logs()
-        case "branch" =>
+        case "branch" => //Branch.branch(config.branchName, config.verbose)
         case "tag" =>
         case _ => println("sgit: '" + config.mode + "'is not a sgit command.")
       }

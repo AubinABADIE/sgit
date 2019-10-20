@@ -7,6 +7,8 @@ import scala.annotation.tailrec
 
 object StageManager {
 
+
+
   /**
    * Gets the staged files from the sgit folder.
    * @return a sequence of files
@@ -79,11 +81,19 @@ object StageManager {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
+   * Searches for the untracked files in the directory.
+   * @param files the files to check
+   * @return a list of untracked files.
+   */
+  def getUntrackedFiles(files: Seq[File]): Seq[File] =
+    files.filterNot(file => FileManager.isFileOrDirExists(".sgit/objects/blobs/" + file.sha1))
+
+  /**
    * Takes the existing lines from the staged file, removes the elements to removes, and writes back.
    * @param filePaths the file signatures to remove
    * @return None if error, Some(true) otherwise.
    */
-  def removeStagedFiles(filePaths: Seq[String]): Option[Boolean] = {
+  def getRemovedStagedFiles(filePaths: Seq[String]): Option[Boolean] = {
     val index: File = ".sgit/INDEX".toFile
     if(!FileManager.isFileOrDirExists(index)) None
     else {

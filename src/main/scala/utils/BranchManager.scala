@@ -32,23 +32,11 @@ case object BranchManager {
     }
   }
 
-//  /**
-//   * Returns all the branches.
-//   * @return An optional map of branches, name -> commit
-//   */
-//  def getAllBranches: Option[Map[String, String]] = {
-//    if(".sgit/refs/heads".toFile.isEmpty) None
-//    else {
-//      val branches = ".sgit/refs/heads".toFile.children.toIndexedSeq.sorted(File.Order.byModificationTime)
-//      Some(branches.map(branch => (branch.name, branch.contentAsString)).toMap)
-//    }
-//  }
-
   /**
-   * Updates the current branch, and returns the name of the current branch.
-   * @param commit the new sha to refer to.
-   * @return an option, none if error, or the branch name.
-   */
+  * Updates the current branch, and returns the name of the current branch.
+  * @param commit the new sha to refer to.
+  * @return an option, none if error, or the branch name.
+  */
   def updateCurrentBranch(commit: String) = FileManager.getFile(".sgit/refs/heads/" + getCurrentBranch()).get.overwrite(commit)
 
   /**
@@ -57,4 +45,15 @@ case object BranchManager {
    */
   def updateHead(newBranch: String): Unit = FileManager.getFile(".sgit/HEAD").get.overwrite("refs/heads/" + newBranch)
 
+  /**
+   * Returns all the branches.
+   * @return An optional map of branches, name -> commit
+   */
+  def getAllBranches(): Map[String, String] = {
+    val branches = FileManager.getFile(".sgit/refs/heads").get
+      .children
+      .toIndexedSeq
+      .sorted(File.Order.byModificationTime)
+    branches.map(branch => (branch.name, branch.contentAsString)).toMap
+  }
 }

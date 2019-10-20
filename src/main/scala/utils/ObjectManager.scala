@@ -7,8 +7,6 @@ import scala.annotation.tailrec
 
 case object ObjectManager {
 
-  def wd(): File = ".sgit/".toFile.parent
-
   def getObject(hash: String): Option[File] = {
     if(FileManager.isFileOrDirExists(".sgit/objects/blobs")) Some((".sgit/objects/blobs/" + hash).toFile)
     else None
@@ -23,20 +21,20 @@ case object ObjectManager {
 
   def getObjectsFromRegex(str: String): Seq[File] = {
     if(!str.contains('*') && (str.toFile.exists && !str.toFile.isDirectory)) Seq(str.toFile)
-    else wd().glob(str).toSeq
+    else FileManager.wd().glob(str).toSeq
   }
 
   def createObjects(files: Seq[File]): Seq[Blob] = {
     files.iterator.map(file => {
       writeObject(file)
-      Blob(file.sha1, wd().relativize(file).toString, FileManager.readFile(file))
+      Blob(file.sha1, FileManager.wd().relativize(file).toString, FileManager.readFile(file))
     }).toSeq
   }
 
   def writeObject(file: File): Unit = {
     (".sgit/objects/blobs/" + file.sha1)
       .toFile
-      .overwrite(wd().relativize(file).toString)
+      .overwrite(FileManager.wd().relativize(file).toString)
       .appendLine()
       .appendLine(FileManager.readFile(file))
   }
@@ -80,7 +78,7 @@ case object ObjectManager {
     @tailrec
     def convert(files: Seq[File], out: Seq[Staged]): Seq[Staged] = {
       if (files.isEmpty) out
-      else convert(files.tail, out :+ Staged(files.head.sha1, wd().relativize(files.head).toString))
+      else convert(files.tail, out :+ Staged(files.head.sha1, FileManager.wd().relativize(files.head).toString))
     }
     convert(files, Seq())
   }
@@ -104,9 +102,9 @@ case object ObjectManager {
   }
 
   /**
-   * gets the names and the sha prints from a sequence of staged files.
+   * gets the names and the hash prints from a sequence of staged files.
    * @param stagedFiles the staged files.
-   * @return a tuple, the first one containing the name and the second the sha prints.
+   * @return a tuple, the first one containing the name and the second the hash prints.
    */
-  def nameAndShaFromStageFiles(stagedFiles: Seq[Staged]): (Seq[String], Seq[String]) = (stagedFiles.map(_.path), stagedFiles.map(_.hash))
+  def nameAndHashFromStageFiles(stagedFiles: Seq[Staged]): (Seq[String], Seq[String]) = (stagedFiles.map(_.path), stagedFiles.map(_.hash))
 }
