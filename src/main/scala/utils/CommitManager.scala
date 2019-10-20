@@ -8,10 +8,10 @@ import objects.{Commit, Staged}
 case object CommitManager {
 
   /**
-   * Creates a commit file on the objects directory.
-   * @param files the files to commit.
-   * @param message the commit description
-   * @param parent the parents of the commit.
+   * Create a Commit object in the objects/commits directory.
+   * @param files the files to commit
+   * @param message the commit message
+   * @param parent the parent of the commit
    */
   def createCommit(files: Seq[Staged], message: String, parent: String): String = {
     val commit: File = FileManager.createFile(".sgit/objects/commits/tmpObject")
@@ -23,13 +23,9 @@ case object CommitManager {
   }
 
   /**
-   * Finds the commit infos by its ID.
-   * Commit structure:
-   * desc: "desc"
-   * parent: "SHA prints separated by spaces"
-   * The following lines are the files.
+   * Get the Commit object from its hash ID
    * @param hashId the commit id
-   * @return a, option with a commit object containing the infos.
+   * @return the Commit object if it exists, None otherwise
    */
   def getCommit(hashId: String): Option[Commit] = {
     if(!FileManager.isFileOrDirExists(".sgit/objects/commits/" + hashId)) return None
@@ -54,8 +50,8 @@ case object CommitManager {
   }
 
   /**
-   * Finds the last commit.
-   * @return the commit hash ID.
+   * Get the last commit
+   * @return the commit hash ID
    */
   def lastCommit(): String = {
     val ref : String = FileManager.readFile(".sgit/HEAD")
@@ -65,9 +61,9 @@ case object CommitManager {
   }
 
   /**
-   * Removes the files that has not been modified from the previous commit.
-   * @param newFiles the new files to add.
-   * @return the new files minus the not modified ones.
+   * Get the files that has been modified since the previous commit
+   * @param newFiles the new files to add
+   * @return a Seq of modified Staged files
    */
   def getModifiedFiles(newFiles: Seq[Staged]): Seq[Staged] = {
     val lastCommit = CommitManager.lastCommit()

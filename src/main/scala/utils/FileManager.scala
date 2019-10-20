@@ -43,11 +43,21 @@ case object FileManager {
   def lastModifiedTime(path: String): Instant = path.toFile.lastModifiedTime
   def lastModifiedTime(file: File): Instant = file.lastModifiedTime
 
+  /**
+   * Get the file by using path
+   * @param path the path to file
+   * @return the file or None if it doesn't exist
+   */
   def getFile(path: String): Option[File] = {
     if(isFileOrDirExists(path)) Some(path.toFile)
     else None
   }
 
+  /**
+   * Get all the files
+   * @param files
+   * @return
+   */
   def getFiles(files: Seq[File]): Seq[File] = {
     @tailrec
     def findFiles(files: Seq[File], out: Seq[File]): Seq[File] = {
@@ -59,6 +69,11 @@ case object FileManager {
     findFiles(files, Seq[File]()).filterNot(file => file == null)
   }
 
+  /**
+   * Get recursively the files in a directory
+   * @param path the directory path
+   * @return a seq of files.
+   */
   def listFilesInDirectory(path: File): Seq[File] = {
     path.list(!_.pathAsString.contains(".sgit"))
       .filter(_.isRegularFile)

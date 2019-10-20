@@ -7,7 +7,7 @@ import utils.{BranchManager, CommitManager, ConsoleOutput, FileManager, ObjectMa
 case object Status {
 
   /**
-   * Prints the status of the sgit.
+   * Display the status of the repository
    */
   def status(): Unit = {
     if (!FileManager.isFileOrDirExists(".sgit")) ConsoleOutput.printError("Repository had not been initialized yet. Please run 'sgit init'.")
@@ -23,6 +23,7 @@ case object Status {
       if(lastCommit.isEmpty) ConsoleOutput.print("\nNo commit\n")
       else ConsoleOutput.print("Your branch is up-to-date on " + branch + "\n")
 
+      // Untracked files
       if (lastCommit.isEmpty && stagedFiles.isEmpty) ConsoleOutput.printUntrackedFiles(untrackedFiles)
 
       else if(lastCommit.nonEmpty) {
@@ -31,11 +32,11 @@ case object Status {
         val commitFiles: Seq[Staged] = commit.get.files
         val deletedFiles: Option[Seq[Staged]] = getDeletedFiles(allFiles, stagedFiles)
 
-        //Changes ready to be committed
+        // Changes to be committed
         val changesToBeCommitted = getChangesToBeCommitted(stagedFiles, commitFiles)
         if (changesToBeCommitted.nonEmpty) ConsoleOutput.printChangesToBeCommitted(changesToBeCommitted.get)
 
-        //Changes that are not staged for commit. Also contains the untracked files at position 2
+        // Changes not staged
         val changesNotChanged: (Seq[String], Seq[File]) = getChangesNotStaged(notInCurrentBranch, commitFiles, stagedFiles)
         if (changesNotChanged._1.nonEmpty && deletedFiles.isEmpty)
           ConsoleOutput.printChangesNotStaged(changesNotChanged._1)
@@ -45,10 +46,11 @@ case object Status {
         } else if(changesNotChanged._1.isEmpty && deletedFiles.nonEmpty)
           ConsoleOutput.printChangesNotStaged(deletedFiles.get.map(f => "\tdeleted: " + f.path))
 
-        if (changesNotChanged._2.nonEmpty)
-          ConsoleOutput.printUntrackedFiles(changesNotChanged._2)
+        // Untracked files
+        if (changesNotChanged._2.nonEmpty)  ConsoleOutput.printUntrackedFiles(changesNotChanged._2)
       }
 
+      // Nothing was add
       else ConsoleOutput.print("Nothing to staged (create/copy files and use 'sgit add' to tracked them")
     }
   }
@@ -79,7 +81,7 @@ case object Status {
     if (stagedFiles.isEmpty) None
     else if (committedFiles.isEmpty) Some(stagedFiles.map(file => "\tadded: " + file.path))
     else {
-      val committed = ObjectManager.nameAndHashFromStageFiles(committedFiles)
+      val committed = ObjectManager.nameAndHashFromStagedFiles(committedFiles)
       //The name is not in the committed files
       val addedFiles: Seq[Staged] = stagedFiles.filterNot(file => committed._1.contains(file.path))
       //The name is in the committed files but the sha print isn't
@@ -101,7 +103,7 @@ case object Status {
   def getChangesNotStaged(untrackedFiles: Seq[File], committedFiles: Seq[Staged], stagedFiles: Seq[Staged]): (Seq[String], Seq[File]) = {
 
     def calculateDiff(untrackedFiles: Seq[File], files: Seq[Staged]): (Seq[String], Seq[File]) = {
-      val namesAndHash = ObjectManager.nameAndHashFromStageFiles(files)
+      val namesAndHash = ObjectManager.nameAndHashFromStagedFiles(files)
       val modified: Seq[File] = untrackedFiles.filter(file => namesAndHash._1.contains(FileManager.wd().relativize(file).toString) && !namesAndHash._2.contains(file.sha1))
       val added: Seq[File] = untrackedFiles
         .filter(file => namesAndHash._1.contains(FileManager.wd().relativize(file).toString))

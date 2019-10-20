@@ -8,8 +8,8 @@ import scala.annotation.tailrec
 case object Commit {
 
   /**
-   * Creates a new commit in the repository.
-   * @return the commit SHA or none if error.
+   * Create a new commit
+   * @return the hash ID or None.
    */
   def commit(message: String): Option[String] = {
     val lastCommit: String = CommitManager.lastCommit()
@@ -33,6 +33,13 @@ case object Commit {
     }
   }
 
+  /**
+   * Create the Commit object and update the current branch
+   * @param stagedFiles the files to be committed
+   * @param message the name of the commit
+   * @param parent the parent of the commit
+   * @return the hash ID
+   */
   def applyCommit(stagedFiles: Seq[Staged], message: String, parent: String): String = {
     val hash = CommitManager.createCommit(stagedFiles, message, parent)
     BranchManager.updateCurrentBranch(hash)

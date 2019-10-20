@@ -1,3 +1,3 @@
 package actions
 
-case object Tag
+case object Tag {}

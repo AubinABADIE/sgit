@@ -7,11 +7,21 @@ import scala.annotation.tailrec
 
 case object ObjectManager {
 
+  /**
+   * Get file from hash ID
+   * @param hash the hash ID of the blob
+   * @return the file or None
+   */
   def getObject(hash: String): Option[File] = {
     if(FileManager.isFileOrDirExists(".sgit/objects/blobs")) Some((".sgit/objects/blobs/" + hash).toFile)
     else None
   }
 
+  /**
+   * Get files from many hashes ID
+   * @param hashes the hashes ID
+   * @return a Seq of the files or None
+   */
   def getObjects(hashes: Seq[String]): Seq[Option[File]] = {
     hashes.map(hash => {
       if(FileManager.isFileOrDirExists(hash)) Some(getObject(hash).get)
@@ -19,11 +29,11 @@ case object ObjectManager {
     })
   }
 
-  def getObjectsFromRegex(str: String): Seq[File] = {
-    if(!str.contains('*') && (str.toFile.exists && !str.toFile.isDirectory)) Seq(str.toFile)
-    else FileManager.wd().glob(str).toSeq
-  }
-
+  /**
+   * Create many blobs
+   * @param files a Seq of files
+   * @return a Seq of Blob
+   */
   def createObjects(files: Seq[File]): Seq[Blob] = {
     files.iterator.map(file => {
       writeObject(file)
@@ -31,6 +41,10 @@ case object ObjectManager {
     }).toSeq
   }
 
+  /**
+   * Write the path and content of a file in a blob
+   * @param file a file
+   */
   def writeObject(file: File): Unit = {
     (".sgit/objects/blobs/" + file.sha1)
       .toFile
@@ -39,6 +53,11 @@ case object ObjectManager {
       .appendLine(FileManager.readFile(file))
   }
 
+  /**
+   * Delete an object
+   * @param name hash ID of the object to delete
+   * @return true if the object has been delete, None otherwise
+   */
   def deleteObject(name: String): Option[Boolean] = {
     val file = getObject(name).get
     if(FileManager.isEmpty(file)) None
@@ -48,17 +67,10 @@ case object ObjectManager {
     }
   }
 
-  def compareObjects(f1: File, f2: File): Option[Boolean] = {
-    if (!f1.exists || !f2.exists) None
-    else Some(f1.isSameContentAs(f2))
-  }
-
   /**
-   * Converts a blob file (in memory) to a staged file (in memory).
-   * These files aren't actually written, it's their representation in memory.
-   * It uses a tail recursion for improved performance.
-   * @param blobs the sequence of blobs to convert.
-   * @return the sequence of staged files representing the blobs.
+   * Convert a Seq of blob file to a Seq staged file
+   * @param blobs the sequence of blobs to convert
+   * @return the Seq of staged files
    */
   def blobsToStaged(blobs: Seq[Blob]): Seq[Staged] = {
     @tailrec
@@ -70,41 +82,9 @@ case object ObjectManager {
   }
 
   /**
-   * Converts a file to a staged file representation.
-   * @param files the sequence of files to convert
-   * @return the sequence of staged file returned.
+   * Get the names and the hash IDs from a sequence of staged files
+   * @param stagedFiles the staged files
+   * @return Seq of tuples with path and hash ID
    */
-  def filesToStaged(files: Seq[File]): Seq[Staged] = {
-    @tailrec
-    def convert(files: Seq[File], out: Seq[Staged]): Seq[Staged] = {
-      if (files.isEmpty) out
-      else convert(files.tail, out :+ Staged(files.head.sha1, FileManager.wd().relativize(files.head).toString))
-    }
-    convert(files, Seq())
-  }
-
-  /**
-   * Converts staged files to blobs.
-   * @param staged the files to convert
-   * @return the blobs
-   */
-  def stagedToBlobs(staged: Seq[Staged]): Seq[Blob] = {
-    @tailrec
-    def convert(stagedFiles: Seq[Staged], out: Seq[Blob]): Seq[Blob] = {
-      if(stagedFiles.isEmpty) out
-      else {
-        val file: File = getObject(stagedFiles.head.hash).get
-        val blob = Blob(stagedFiles.head.hash, stagedFiles.head.path, FileManager.readFile(file).substring(FileManager.readFile(file).indexOf("\n")))
-        convert(stagedFiles.tail, out :+ blob)
-      }
-    }
-    convert(staged, Seq())
-  }
-
-  /**
-   * gets the names and the hash prints from a sequence of staged files.
-   * @param stagedFiles the staged files.
-   * @return a tuple, the first one containing the name and the second the hash prints.
-   */
-  def nameAndHashFromStageFiles(stagedFiles: Seq[Staged]): (Seq[String], Seq[String]) = (stagedFiles.map(_.path), stagedFiles.map(_.hash))
+  def nameAndHashFromStagedFiles(stagedFiles: Seq[Staged]): (Seq[String], Seq[String]) = (stagedFiles.map(_.path), stagedFiles.map(_.hash))
 }

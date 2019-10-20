@@ -19,8 +19,8 @@ case object BranchManager {
   }
 
   /**
-   * Gets the current branch name.
-   * @return the branch name.
+   * Get the current branch name
+   * @return the branch name
    */
   def getCurrentBranch(): String = {
     if(!".sgit/HEAD".toFile.exists) ""
@@ -33,27 +33,26 @@ case object BranchManager {
   }
 
   /**
-  * Updates the current branch, and returns the name of the current branch.
-  * @param commit the new sha to refer to.
-  * @return an option, none if error, or the branch name.
-  */
-  def updateCurrentBranch(commit: String) = FileManager.getFile(".sgit/refs/heads/" + getCurrentBranch()).get.overwrite(commit)
-
-  /**
-   * Updates the current branch to the new head.
-   * @param newBranch the new branch to refer.
-   */
-  def updateHead(newBranch: String): Unit = FileManager.getFile(".sgit/HEAD").get.overwrite("refs/heads/" + newBranch)
-
-  /**
-   * Returns all the branches.
+   * Return all the branches.
    * @return An optional map of branches, name -> commit
    */
   def getAllBranches(): Map[String, String] = {
     val branches = FileManager.getFile(".sgit/refs/heads").get
       .children
-      .toIndexedSeq
+      .toSeq
       .sorted(File.Order.byModificationTime)
     branches.map(branch => (branch.name, branch.contentAsString)).toMap
   }
+
+  /**
+  * Update the current branch
+  * @param commit the hash ID of the last commit
+  */
+  def updateCurrentBranch(commit: String): Unit = FileManager.getFile(".sgit/refs/heads/" + getCurrentBranch()).get.overwrite(commit)
+
+  /**
+   * Change the current branch to an other one
+   * @param newBranch the new branch
+   */
+  def updateHead(newBranch: String): Unit = FileManager.getFile(".sgit/HEAD").get.overwrite("refs/heads/" + newBranch)
 }

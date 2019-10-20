@@ -1,3 +1,3 @@
 package actions
 
-case object Diff
+case object Diff {}

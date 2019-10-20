@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 object Add {
 
   /**
-   * Adds certain files to the stage.
+   * Adds files to the stage.
    * @param paths the files given by the user.
    */
   def add(paths: Seq[File]): Unit = {

@@ -5,9 +5,9 @@ import better.files._
 case object TagManager {
 
   /**
-   * Creates a new tag.
+   * Create a new tag
    * @param tagName the tag name
-   * @param commitName the commit to affect the tag to.
+   * @param commitName the concerned commit hash ID
    * @return True if the commit has been created, false otherwise.
    */
   def createTag(tagName: String, commitName: String): Boolean = {
@@ -21,7 +21,7 @@ case object TagManager {
   }
 
   /**
-   * Gets all the tags from the repository.
+   * Get all the tags in the refs/tags repository.
    * @return an optional map of tags, name -> commit
    */
   def getAllTags: Option[Map[String, String]] = {

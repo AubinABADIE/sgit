@@ -67,13 +67,14 @@ object SGit extends App {
         .action((_, c) => c.copy(mode = "branch"))
         .text("Create a new branch")
         .children(
-          opt[String]("av")
-            .action((_, c) => c.copy(verbose = true))
-            .text("List all existing branches and tags"),
           arg[String]("<branch name>")
             .optional()
             .action((x, c) => c.copy(branchName = Some(x)))
-            .text("Branch to be created")
+            .text("Branch to be created"),
+          opt[Unit]("verbose")
+            .abbr("av")
+            .action((_, c) => c.copy(verbose = true))
+            .text("List all existing branches and tags")
         ),
 
       cmd(name = "tag")
@@ -99,8 +100,8 @@ object SGit extends App {
         case "status" => Status.status()
         case "commit" => Commit.commit(config.commitMessage)
         case "log" => Log.logs()
-        case "branch" => //Branch.branch(config.branchName, config.verbose)
-        case "tag" =>
+        case "branch" => Branch.branch(config.branchName, config.verbose)
+        case "tag" => //Tag.tag()
         case _ => println("sgit: '" + config.mode + "'is not a sgit command.")
       }
     }

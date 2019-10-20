@@ -4,6 +4,10 @@ import utils.{FileManager, ConsoleOutput}
 
 case object Init {
 
+  /**
+   * Initialize the repo in the working directory
+   * @return true if the repo has been initialized, false otherwise.
+   */
   def init(): Boolean = {
     ConsoleOutput.print("Initializing repository...")
     val res = createDir()
@@ -12,6 +16,10 @@ case object Init {
     return res
   }
 
+  /**
+   * Create the folder structure of .sgit
+   * @return true if the directories has been created, false otherwise.
+   */
   def createDir(): Boolean = {
     if(FileManager.isFileOrDirExists(".sgit")) false
     else {

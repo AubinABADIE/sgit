@@ -7,11 +7,9 @@ import scala.annotation.tailrec
 
 object StageManager {
 
-
-
   /**
-   * Gets the staged files from the sgit folder.
-   * @return a sequence of files
+   * Get the staged files in the INDEX file.
+   * @return a Seq of Staged object
    */
   def getStagedFiles(): Seq[Staged] = {
     val index : File = ".sgit/INDEX".toFile
@@ -30,11 +28,10 @@ object StageManager {
   }
 
   /**
-   * Finds the duplicated files between the old stage and the new stage.
-   * If the sha prints are different but the name is the same, it removes the old file from the final stage
-   * @param newFiles The new files from the most recent add call.
-   * @param oldFiles the existing files in the stage.
-   * @return a tuple of sequence of files. _1 contains the new stage, _2 contains the files to delete.
+   * Find the files which need to be update
+   * @param newFiles the new files the ad command
+   * @param oldFiles the existing staged files.
+   * @return a Seq of Staged objects to be add
    */
   def updateIndex(newFiles: Seq[Staged], oldFiles: Seq[Staged]): Seq[Staged] = {
     if(oldFiles.isEmpty) return newFiles
@@ -56,9 +53,9 @@ object StageManager {
   }
 
   /**
-   * Add files to the staged file: removes the old lines and adds others..
-   * @param filePaths the sequence of file signatures (sha1)
-   * @return an option, None if the folder doesn't exist, true otherwise.
+   * Remove old staged files and add the new ones in the INDEX file
+   * @param filePaths the Seq of Staged objects
+   * @return true if the files has been add, None otherwise.
    */
   def addStagedFiles(filePaths: Seq[Staged]): Option[Boolean] = {
     val index: File = FileManager.getFile(".sgit/INDEX").get
@@ -78,32 +75,10 @@ object StageManager {
     index.overwrite("")
   }
 
-  ///////////////////////////////////////////////////////////////////////////////////////////
-
   /**
    * Searches for the untracked files in the directory.
    * @param files the files to check
    * @return a list of untracked files.
    */
-  def getUntrackedFiles(files: Seq[File]): Seq[File] =
-    files.filterNot(file => FileManager.isFileOrDirExists(".sgit/objects/blobs/" + file.sha1))
-
-  /**
-   * Takes the existing lines from the staged file, removes the elements to removes, and writes back.
-   * @param filePaths the file signatures to remove
-   * @return None if error, Some(true) otherwise.
-   */
-  def getRemovedStagedFiles(filePaths: Seq[String]): Option[Boolean] = {
-    val index: File = ".sgit/INDEX".toFile
-    if(!FileManager.isFileOrDirExists(index)) None
-    else {
-      val content: Seq[String] = FileManager.readFile(index)
-        .split("\n")
-        .toIndexedSeq
-      val newContent = content.filterNot(key => filePaths.contains(key.split(" ")(0)))
-      index.overwrite("")
-      newContent.foreach(file => FileManager.writeLineFile(index, file))
-      Some(true)
-    }
-  }
+  def getUntrackedFiles(files: Seq[File]): Seq[File] = files.filterNot(file => FileManager.isFileOrDirExists(".sgit/objects/blobs/" + file.sha1))
 }

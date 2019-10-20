@@ -1,7 +1,6 @@
 package actions
 
-import better.files._
-import utils.{CommitManager, ConsoleOutput}
+import utils.{BranchManager, CommitManager, ConsoleOutput}
 
 import scala.annotation.tailrec
 
@@ -9,11 +8,11 @@ import scala.annotation.tailrec
 case object Log {
 
   /**
-   * Shows the logs of the commits.
+   * Display the commits logs.
    */
   def logs(): Unit = {
     val lastCommit: String = CommitManager.lastCommit()
-    if(lastCommit.isEmpty) ConsoleOutput.printError("No commits yet, nothing to show.")
+    if(lastCommit.isEmpty) ConsoleOutput.printError("your actual branch '" + BranchManager.getCurrentBranch() + "' doesn't have any commit yet")
     else {
       @tailrec
       def loopCommit(hash: String): Unit = {
