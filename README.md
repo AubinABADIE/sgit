@@ -42,7 +42,7 @@ To learn more about commands, run `sgit --help`.
 - `sgit branch <branch name>`
 - `sgit branch -av`
 - `sgit checkout <branch or tag or commit hash>` -> _not implemented_
-- `sgit tag <tag name>` -> _not implemented_
+- `sgit tag <tag name>`
 
 #### Merge & Rebase:
 - `sgit merge <branch>` -> _not implemented_

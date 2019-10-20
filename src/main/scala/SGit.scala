@@ -8,7 +8,7 @@ case class Config(
   commitMessage: String = "",
   branchName: Option[String] = None,
   verbose: Boolean = false,
-  tagName: String = "",
+  tagName: Option[String] = None,
   checkout: String = "",
 ){}
 
@@ -83,7 +83,7 @@ object SGit extends App {
         .children(
           arg[String]("<tag name>")
             .optional()
-            .action((x, c) => c.copy(tagName = x))
+            .action((x, c) => c.copy(tagName = Some(x)))
             .text("name of the tag")
         ),
     )
@@ -101,7 +101,7 @@ object SGit extends App {
         case "commit" => Commit.commit(config.commitMessage)
         case "log" => Log.logs()
         case "branch" => Branch.branch(config.branchName, config.verbose)
-        case "tag" => //Tag.tag()
+        case "tag" => Tag.tag(config.tagName)
         case _ => println("sgit: '" + config.mode + "'is not a sgit command.")
       }
     }
